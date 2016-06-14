@@ -186,36 +186,33 @@ export default class AppController extends Controller {
         console.log("adding torrent", seedURL)
         torrentClient.add(seedURL, {}, torrent => {
           console.log("add", torrent);
-          var file = torrent.files[0];
+          torrent.files.forEach(file => {
+            file.getBlobURL((err, url) => {
+              var xhr = new XMLHttpRequest();
+              xhr.open('GET', url, true);
+              xhr.responseType = 'blob';
+              xhr.onload = function(e) {
+                if (this.status == 200) {
+                  var audioData = this.response;
 
-          file.getBlobURL((err, url) => {
-
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.responseType = 'blob';
-            xhr.onload = function(e) {
-              if (this.status == 200) {
-                var audioData = this.response;
-                
-                const newMemo = new MemoModel({
-                  audio: audioData,
-                  volumeData: audioData, // Assuming pre-normalised
-                  title: torrent.name.replace(/\.webm$/, ""),
-                  torrentURL: torrent.magnetURI,
-                  description: ""
-                });
-
-                newMemo.put().then(() => {
-                  PubSubInstance().then(ps => {
-                    ps.pub(MemoModel.UPDATED);
+                  const newMemo = new MemoModel({
+                    audio: audioData,
+                    volumeData: audioData, // Assuming pre-normalised
+                    title: torrent.name.replace(/\.webm$/, ""),
+                    torrentURL: torrent.magnetURI,
+                    description: ""
                   });
-                });
-              }
-            };
-            xhr.send();
-            
-          });
 
+                  newMemo.put().then(() => {
+                    PubSubInstance().then(ps => {
+                      ps.pub(MemoModel.UPDATED);
+                    });
+                  });
+                }
+              };
+              xhr.send();
+            });
+          });
         });
       });
     }

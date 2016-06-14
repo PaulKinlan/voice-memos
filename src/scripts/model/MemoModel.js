@@ -30,7 +30,6 @@ export default class MemoModel extends Model {
     this.volumeData = data.volumeData || null;
     this.time = data.time || Date.now();
     this.transcript = data.transcript || null;
-    this.torrentURL = data.torrentURL || null;
   }
 
   static makeURL () {
