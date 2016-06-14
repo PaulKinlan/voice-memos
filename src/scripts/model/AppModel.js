@@ -25,6 +25,7 @@ export default class AppModel extends Model {
 
     this.firstRun = true;
     this.preferences = {};
+    this.torrentURL = data ? data.torrentURL : null;
   }
 
   static get UPDATED () {

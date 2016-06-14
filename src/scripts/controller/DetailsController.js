@@ -16,6 +16,7 @@
  */
 
 import Controller from './Controller';
+import AppModel from '../model/AppModel';
 import MemoModel from '../model/MemoModel';
 import RouterInstance from '../libs/Router';
 import PubSubInstance from '../libs/PubSub';
@@ -492,10 +493,10 @@ export default class DetailsController extends Controller {
   }
 
   onShareButtonClick(e) {
-    MemoModel.get(this.memoId).then( (memo) => {
-      return `/share?seeds=${encodeURIComponent(memo.torrentURL)}`;
+    AppModel.get(1).then(appModel => {
+      return `/share?seeds=${encodeURIComponent(appModel.torrentURL)}`;
     }).then(uri => {
-      history.pushState({}, "Share seed", uri)
+      history.pushState({}, "Share seed", uri);
     });
   }
 

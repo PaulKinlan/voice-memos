@@ -16,6 +16,7 @@
  */
 
 import Controller from './Controller';
+import AppModel from '../model/AppModel';
 import MemoModel from '../model/MemoModel';
 import RouterInstance from '../libs/Router';
 import PubSubInstance from '../libs/PubSub';
@@ -29,6 +30,10 @@ export default class ListController extends Controller {
     this.memos = null;
     this.ctaView = document.querySelector('.js-cta');
     this.view = document.querySelector('.js-list-view');
+
+    AppModel.get(1).then (appModel => {
+      this.appModel = appModel;
+    });
 
     
     Promise.all([
@@ -103,22 +108,20 @@ export default class ListController extends Controller {
   }
 
   seed () {
-    this.memos.forEach((memo) => {
-      // Seed the memo.
-      TorrentInstance().then(torrentClient => {
-        torrentClient.seed(
-          memo.audio, // Audio is a blob, but that is ok.
-          {
-            name: `${memo.title}.webm`,
-            comment: memo.description || '',
-            creationDate: memo.time || Date.now()
-          },
-          torrent => {
-            console.log(torrent);
-            memo.torrentURL = torrent.magnetURI;
-            memo.put();
-          });
-      });
+    // Seed the memos.
+    TorrentInstance().then(torrentClient => {
+      torrentClient.seed(
+        this.memos.map(memo => memo.audio),
+        {
+          name: `voice-memos.webm`,
+          comment: 'all voice memos',
+          creationDate: Date.now()
+        },
+        torrent => {
+          console.log('torrent', torrent);
+          this.appModel.torrentURL = torrent.magnetURI;
+          this.appModel.put();
+        });
     });
   }
 
